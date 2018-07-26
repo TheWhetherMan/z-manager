@@ -3,10 +3,76 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Z_Manager.Controls"
         xmlns:local="clr-namespace:Z_Manager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="MainWindow" 
+        Height="800" Width="1000"
+        WindowStyle="None"
+        ResizeMode="CanMinimize">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Z-Manager;component/Styles/Buttons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid x:Name="TopLevelGrid" Background="#FF666666">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="MenuControlsGrid" Grid.Row="0">
+            <TextBlock Text="Z-Manager" HorizontalAlignment="Center" Margin="5" Foreground="#FF78FF63" FontFamily="ProFontWindows" FontSize="14" >
+                <TextBlock.Effect>
+                    <DropShadowEffect ShadowDepth="0" Color="#FF78FF63"/>
+                </TextBlock.Effect>
+            </TextBlock>
+            <!--<Button x:Name="FileMenuButton" IsEnabled="False" Content="File" HorizontalAlignment="Left" Click="FileMenuButton_Click" Style="{DynamicResource MenuButtonStyle}" Margin="0 0 5 0" />-->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="MinimizeButton" Content="Minimize" Click="MinimizeButton_Click" Style="{DynamicResource MenuButtonStyle}" />
+                <Button x:Name="ExitButton" Content="Exit" Click="ExitButton_Click" Style="{DynamicResource MenuButtonStyle}" />
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="TabGrid" Grid.Row="1">
+            <TabControl Background="#FF474747">
+                <!-- Tab Styles -->
+                <TabControl.BitmapEffect>
+                    <DropShadowBitmapEffect Color="Gray" Direction="270" />
+                </TabControl.BitmapEffect>
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="false">
+                                <Setter Property="Background" Value="DarkGray" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+                <!-- Tab Content -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Fill="LightGreen" Margin="0 2 3 0" Height="10" Width="10" />
+                            <TextBlock Text="Network Monitoring" Margin="5" Foreground="Black" FontFamily="Luxi Mono" FontSize="14" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid x:Name="NetworkContentGrid">
+                        <controls:NetworkControl />
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Fill="LightGreen" Margin="0 2 3 0" Height="10" Width="10" />
+                            <TextBlock Text="Minecraft Server Management" Margin="5" Foreground="Black" FontFamily="Luxi Mono" FontSize="14" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid x:Name="MinecraftServerContentGrid">
+                        <controls:MinecraftServerControl />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </Grid>
 </Window>

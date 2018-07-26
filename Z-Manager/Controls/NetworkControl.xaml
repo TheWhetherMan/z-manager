@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="Z_Manager.Controls.NetworkControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Z_Manager.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Background="#FF474747">
+        <Grid x:Name="NetworkContentGrid" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid x:Name="LeftGrid" Grid.Column="0" Margin="3">
+                <Border CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <TextBlock Text="Commands and Controls" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
+                        <TextBlock.Effect>
+                            <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
+            <Grid x:Name="RightGrid" Grid.Column="1" Margin="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <TextBlock Text="Stats" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
+                        <TextBlock.Effect>
+                            <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+                <Border Grid.Row="2" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <TextBlock Text="Console" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
+                        <TextBlock.Effect>
+                            <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
