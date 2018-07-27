@@ -95,6 +95,7 @@
     <Compile Include="Managers\MinecraftServerManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />
     <Compile Include="Objects\ConnectionSpeedTestResult.cs" />
+    <Compile Include="Objects\MinecraftStatusDTO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -59,42 +59,7 @@ namespace Z_Manager.Managers
 
             try
             {
-                Task loop = Task.Run(async () =>
-                {
-                    _testTaskLoopRunning = true;
-                    _pingTestTimer.Start();
-                    _downloadTestTimer.Start();
-
-                    while (AllowLoopTests)
-                    {
-                        if (_downloadTestTimer.ElapsedMilliseconds > 10000 && !_downloading)
-                        {
-                            _pingTestTimer.Stop();
-                            _downloadTestTimer.Stop();
-
-                            NetworkConsoleMessage?.Invoke("About to test download speed...");
-                            var speed = await CheckInternetConnectionSpeed();
-                            HandleSpeedTestCompletion(speed);
-
-                            continue;
-                        }
-
-                        if (_pingTestTimer.ElapsedMilliseconds > 1000 && !_pinging)
-                        {
-                            _pingTestTimer.Stop();
-                            _downloadTestTimer.Stop();
-                            
-                            var ping = await CheckInternetConnectivityViaPing();
-                            HandlePingTestCompletion(ping);
-
-                            continue;
-                        }
-
-                        await Task.Delay(250);
-                    }
-
-                    _testTaskLoopRunning = false;
-                });
+                Task loop = Task.Run(async () => { await NetworkCheckTask(); });
             }
             catch (Exception ex)
             {
@@ -102,6 +67,43 @@ namespace Z_Manager.Managers
             }
 
             return null;
+        }
+
+        private async Task NetworkCheckTask()
+        {
+            _testTaskLoopRunning = true;
+            _pingTestTimer.Start();
+            _downloadTestTimer.Start();
+
+            while (AllowLoopTests)
+            {
+                if (_downloadTestTimer.ElapsedMilliseconds > 10000 && !_downloading)
+                {
+                    _pingTestTimer.Stop();
+                    _downloadTestTimer.Stop();
+
+                    NetworkConsoleMessage?.Invoke("About to test download speed...");
+                    var speed = await CheckInternetConnectionSpeed();
+                    HandleSpeedTestCompletion(speed);
+
+                    continue;
+                }
+
+                if (_pingTestTimer.ElapsedMilliseconds > 1000 && !_pinging)
+                {
+                    _pingTestTimer.Stop();
+                    _downloadTestTimer.Stop();
+
+                    var ping = await CheckInternetConnectivityViaPing();
+                    HandlePingTestCompletion(ping);
+
+                    continue;
+                }
+
+                await Task.Delay(250);
+            }
+
+            _testTaskLoopRunning = false;
         }
 
         private void HandlePingTestCompletion(PingReply ping)
