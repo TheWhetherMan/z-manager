@@ -89,6 +89,7 @@
     <Compile Include="Managers\LoggingManager.cs" />
     <Compile Include="Managers\MinecraftServerManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />
+    <Compile Include="Objects\ConnectionSpeedTestResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
