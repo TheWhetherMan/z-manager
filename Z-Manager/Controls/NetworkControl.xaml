@@ -7,29 +7,37 @@
              mc:Ignorable="d" 
              Name="_this"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Z-Manager;component/Styles/TextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="#FF474747">
         <Grid x:Name="NetworkContentGrid" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Grid x:Name="LeftGrid" Grid.Column="0" Margin="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Border Grid.ColumnSpan="2" Grid.RowSpan="2" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="1*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" Text="Commands and Controls" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
-                            <TextBlock.Effect>
-                                <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                        <Button x:Name="StartStopTestsButton" Grid.Column="0" Content="Start Network Tests" Height="30" Margin="10" Background="Gray" Foreground="White" Click="StartStopTestLoopButton_Click" />
+            <Grid x:Name="LeftGrid" Margin="3">
+                <Border CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <Grid x:Name="TitleAndContentGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" >
+                            <TextBlock Text="Commands and Controls" Margin="3" Style="{DynamicResource TextBlockBlueGlow}" />
+                            <Border BorderThickness="1" BorderBrush="Gray" />
+                        </StackPanel>
+                        <Grid x:Name="SplitContentColumnGrid" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="StartStopTestsButton" Grid.Column="0" Content="Start Network Tests" Height="30" Margin="10" Background="Gray" Foreground="White" Click="StartStopTestLoopButton_Click" />
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
@@ -40,24 +48,25 @@
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
-                    <TextBlock Text="Stats" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
-                        <TextBlock.Effect>
-                            <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
-                        </TextBlock.Effect>
-                    </TextBlock>
+                    <StackPanel>
+                        <TextBlock Text="Network Stats" Margin="3" Style="{DynamicResource TextBlockBlueGlow}" />
+                        <Border BorderThickness="1" BorderBrush="Gray" />
+                        <TextBlock x:Name="LastPingText" Text="{Binding ElementName=_this, Path=LastPingTime, FallbackValue='Last Ping Time: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="PingAddressText" Text="{Binding ElementName=_this, Path=PingAddress, FallbackValue='Ping Address: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadTimeText" Text="{Binding ElementName=_this, Path=LastDownloadTime, FallbackValue='Last Download Time: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadSpeedText" Text="{Binding ElementName=_this, Path=LastDownloadSpeed, FallbackValue='Last Download Speed: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadSizeText" Text="{Binding ElementName=_this, Path=LastDownloadFileSize, FallbackValue='Last Download File Size: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                    </StackPanel>
                 </Border>
                 <Border Grid.Row="2" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="20" />
+                            <RowDefinition Height="auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Console" Margin="3" Foreground="#FF63E3FF" FontFamily="ProFontWindows" >
-                            <TextBlock.Effect>
-                                <DropShadowEffect ShadowDepth="0" Color="#FF63E3FF"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                        <TextBox x:Name="ConsoleTextBox" Text="{Binding ElementName=_this, Path=ConsoleText}" Grid.Row="1" Background="#FF474747" VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" Foreground="#FF63E3FF" Margin="5"/>
+                        <TextBlock Text="Console" Margin="3" Foreground="#FF63E3FF" Style="{DynamicResource TextBlockBlueGlow}" />
+                        <Border BorderThickness="0 0 0 2" BorderBrush="Gray" />
+                        <TextBox x:Name="ConsoleTextBox" Grid.Row="1" Text="{Binding ElementName=_this, Path=ConsoleText, FallbackValue='Some text from somewhere: 0.0 mbps'}" Foreground="WhiteSmoke" Background="#FF474747" FontFamily="M+ 1m" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" Margin="5" TextWrapping="Wrap" FontSize="14"/>
                     </Grid>
                 </Border>
             </Grid>

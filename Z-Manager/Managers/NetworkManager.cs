@@ -25,6 +25,8 @@ namespace Z_Manager.Managers
             }
         }
 
+        public static readonly string DownloadURL = "http://dl.google.com/chrome/install/154.36/chrome_installer.exe";
+        public static readonly string PingAddress = "8.8.8.8";
         public static bool AllowLoopTests { get; set; }
 
         private Ping _connectionPing;
@@ -70,7 +72,7 @@ namespace Z_Manager.Managers
                             _pingTestTimer.Stop();
                             _downloadTestTimer.Stop();
 
-                            NetworkConsoleMessage?.Invoke("About to test download speed, stopping test timers");
+                            NetworkConsoleMessage?.Invoke("About to test download speed...");
                             var speed = await CheckInternetConnectionSpeed();
                             HandleSpeedTestCompletion(speed);
 
@@ -140,14 +142,13 @@ namespace Z_Manager.Managers
             try
             {
                 int timeout = 2000;
-                string host = "8.8.8.8";
                 byte[] buffer = new byte[32];
                 PingOptions pingOptions = new PingOptions();
                 
                 return await Task.Run(async () =>
                 {
                     _pinging = true;
-                    return await _connectionPing.SendPingAsync(host, timeout, buffer, pingOptions);
+                    return await _connectionPing.SendPingAsync(PingAddress, timeout, buffer, pingOptions);
                 });
             }
             catch (Exception ex)
@@ -187,7 +188,7 @@ namespace Z_Manager.Managers
                     using (var client = new WebClient())
                     {
                         watch.Start();
-                        data = await client.DownloadDataTaskAsync(new Uri("http://dl.google.com/googletalk/googletalk-setup.exe?t=" + DateTime.Now.Ticks));
+                        data = await client.DownloadDataTaskAsync(new Uri(DownloadURL));
                         watch.Stop();
                     }
 
