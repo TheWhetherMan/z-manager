@@ -32,7 +32,6 @@ namespace Z_Manager.Managers
         private Stopwatch _statusLoopTimer;
         private Stopwatch _processLoopTimer;
         private static bool _serverCheckLoopRunning;
-        private static bool _processCheckLoopRunning;
         private const ushort _dataSize = 512;
         private const ushort _numFields = 6;
         private string _serverAddress = "";
@@ -42,6 +41,9 @@ namespace Z_Manager.Managers
 
         private MinecraftServerManager()
         {
+            _statusLoopTimer = new Stopwatch();
+            _processLoopTimer = new Stopwatch();
+
             MinecraftServerStatusMessage += OnMinecraftServerStatusMessage;
         }
 
@@ -82,7 +84,7 @@ namespace Z_Manager.Managers
 
             while (AllowLoopServerStatusChecks)
             {
-                if (_processLoopTimer.ElapsedMilliseconds > 30000)
+                if (_processLoopTimer.ElapsedMilliseconds > 30000 && !_checkingProcess)
                 {
                     _statusLoopTimer.Stop();
                     _processLoopTimer.Stop();
@@ -94,7 +96,7 @@ namespace Z_Manager.Managers
                     _processLoopTimer.Restart();
                 }
 
-                if (_statusLoopTimer.ElapsedMilliseconds > 60000)
+                if (_statusLoopTimer.ElapsedMilliseconds > 60000 && !_checkingStatus)
                 {
                     _statusLoopTimer.Stop();
                     _processLoopTimer.Stop();
@@ -117,6 +119,8 @@ namespace Z_Manager.Managers
         {
             try
             {
+                _checkingProcess = true;
+
                 if (Process.GetProcessesByName("javaw").Count() > 0)
                 {
                     MinecraftServerStatusMessage?.Invoke("Minecraft server appears to be running");
@@ -137,7 +141,7 @@ namespace Z_Manager.Managers
             }
             finally
             {
-
+                _checkingProcess = false;
             }
         }
 
@@ -173,52 +177,61 @@ namespace Z_Manager.Managers
 
             try
             {
-                Stopwatch stopWatch = new Stopwatch();
-                byte[] payload = new byte[] { 0xFE, 0x01 };
+                _checkingStatus = true;
 
-                using (TcpClient client = new TcpClient() { SendTimeout = 3000, ReceiveTimeout = 3000 })
+                try
                 {
-                    stopWatch.Start();
-                    client.Connect(_serverAddress, _serverPort);
-                    stopWatch.Stop();
-                    dto.CheckTime = stopWatch.ElapsedMilliseconds;
+                    Stopwatch stopWatch = new Stopwatch();
+                    byte[] payload = new byte[] { 0xFE, 0x01 };
 
-                    NetworkStream stream = client.GetStream();
-                    stream.Write(payload, 0, payload.Length);
-                    stream.Read(rawServerData, 0, _dataSize);
-                    client.Close();
+                    using (TcpClient client = new TcpClient() { SendTimeout = 3000, ReceiveTimeout = 3000 })
+                    {
+                        stopWatch.Start();
+                        client.Connect(_serverAddress, _serverPort);
+                        stopWatch.Stop();
+                        dto.CheckTime = stopWatch.ElapsedMilliseconds;
+
+                        NetworkStream stream = client.GetStream();
+                        stream.Write(payload, 0, payload.Length);
+                        stream.Read(rawServerData, 0, _dataSize);
+                        client.Close();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                MinecraftServerStatusMessage?.Invoke("GetServerStatus exception: " + ex.Message);
-                dto.ServerUp = false;
-                return dto;
-            }
-
-            if (rawServerData == null || rawServerData.Length == 0)
-            {
-                MinecraftServerStatusMessage?.Invoke("Server status data was not populated");
-                dto.ServerUp = false;
-            }
-            else
-            {
-                var serverData = Encoding.Unicode.GetString(rawServerData).Split("\u0000\u0000\u0000".ToCharArray());
-                if (serverData != null && serverData.Length >= _numFields)
+                catch (Exception ex)
                 {
-                    dto.ServerUp = true;
-                    dto.Version = serverData[2];
-                    dto.Motd = serverData[3];
-                    dto.CurrentPlayers = serverData[4];
-                    dto.MaximumPlayers = serverData[5];
+                    MinecraftServerStatusMessage?.Invoke("GetServerStatus exception: " + ex.Message);
+                    dto.ServerUp = false;
+                    return dto;
+                }
 
-                    MinecraftServerStatusMessage?.Invoke("Got valid server status data");
+                if (rawServerData == null || rawServerData.Length == 0)
+                {
+                    MinecraftServerStatusMessage?.Invoke("Server status data was not populated");
+                    dto.ServerUp = false;
                 }
                 else
                 {
-                    MinecraftServerStatusMessage?.Invoke("Server status data was not populated as expected");
-                    dto.ServerUp = false;
+                    var serverData = Encoding.Unicode.GetString(rawServerData).Split("\u0000\u0000\u0000".ToCharArray());
+                    if (serverData != null && serverData.Length >= _numFields)
+                    {
+                        dto.ServerUp = true;
+                        dto.Version = serverData[2];
+                        dto.Motd = serverData[3];
+                        dto.CurrentPlayers = serverData[4];
+                        dto.MaximumPlayers = serverData[5];
+
+                        MinecraftServerStatusMessage?.Invoke("Got valid server status data");
+                    }
+                    else
+                    {
+                        MinecraftServerStatusMessage?.Invoke("Server status data was not populated as expected");
+                        dto.ServerUp = false;
+                    }
                 }
+            }
+            finally
+            {
+                _checkingStatus = false;
             }
 
             return dto;
