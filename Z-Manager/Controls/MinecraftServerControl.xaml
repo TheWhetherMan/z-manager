@@ -6,11 +6,69 @@
              xmlns:local="clr-namespace:Z_Manager.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Z-Manager;component/Styles/TextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="#FF474747">
-        <TextBlock Text="Minecraft Server Management and Monitoring" Margin="5" Foreground="#FFE469FF" FontFamily="ProFontWindows" >
-            <TextBlock.Effect>
-                <DropShadowEffect ShadowDepth="0" Color="#FFE469FF"/>
-            </TextBlock.Effect>
-        </TextBlock>
+        <Grid x:Name="NetworkContentGrid" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid x:Name="LeftGrid" Margin="3">
+                <Border CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <Grid x:Name="TitleAndContentGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" >
+                            <TextBlock Text="Minecraft Server Controls" Margin="3" Style="{DynamicResource TextBlockPurpleGlow}" />
+                            <Border BorderThickness="1" BorderBrush="Gray" />
+                        </StackPanel>
+                        <Grid x:Name="SplitContentColumnGrid" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="StartStopServerButton" Grid.Column="0" Content="Start Server" Height="30" Margin="10" Background="Gray" Foreground="White" Click="StartStopServerButton_Click" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+            <Grid x:Name="RightGrid" Grid.Column="1" Margin="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <StackPanel>
+                        <TextBlock Text="Server Status" Margin="3" Style="{DynamicResource TextBlockPurpleGlow}" />
+                        <Border BorderThickness="1" BorderBrush="Gray" />
+                        <TextBlock x:Name="LastPingText" Text="{Binding ElementName=_this, Path=LastPingTime, FallbackValue='Last Ping Time: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="PingAddressText" Text="{Binding ElementName=_this, Path=PingAddress, FallbackValue='Ping Address: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadTimeText" Text="{Binding ElementName=_this, Path=LastDownloadTime, FallbackValue='Last Download Time: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadSpeedText" Text="{Binding ElementName=_this, Path=LastDownloadSpeed, FallbackValue='Last Download Speed: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                        <TextBlock x:Name="LastDownloadSizeText" Text="{Binding ElementName=_this, Path=LastDownloadFileSize, FallbackValue='Last Download File Size: N/A'}" Margin="3" Style="{DynamicResource TextBlockWhite}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Row="2" CornerRadius="3" BorderThickness="2" BorderBrush="Gray">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Console" Margin="3" Style="{DynamicResource TextBlockPurpleGlow}" />
+                        <Border BorderThickness="0 0 0 2" BorderBrush="Gray" />
+                        <TextBox x:Name="ConsoleTextBox" Grid.Row="1" Text="{Binding ElementName=_this, Path=ConsoleText, FallbackValue='Server status logging will appear here...'}" Foreground="WhiteSmoke" Background="#FF474747" FontFamily="M+ 1m" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" Margin="5" TextWrapping="Wrap" FontSize="14"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

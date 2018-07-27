@@ -90,6 +90,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Managers\ConfigurationManager.cs" />
     <Compile Include="Managers\LoggingManager.cs" />
     <Compile Include="Managers\MinecraftServerManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />

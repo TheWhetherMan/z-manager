@@ -28,7 +28,7 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" >
-                            <TextBlock Text="Commands and Controls" Margin="3" Style="{DynamicResource TextBlockBlueGlow}" />
+                            <TextBlock Text="Networking Controls" Margin="3" Style="{DynamicResource TextBlockBlueGlow}" />
                             <Border BorderThickness="1" BorderBrush="Gray" />
                         </StackPanel>
                         <Grid x:Name="SplitContentColumnGrid" Grid.Row="1">
@@ -64,9 +64,9 @@
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Console" Margin="3" Foreground="#FF63E3FF" Style="{DynamicResource TextBlockBlueGlow}" />
+                        <TextBlock Text="Console" Margin="3" Style="{DynamicResource TextBlockBlueGlow}" />
                         <Border BorderThickness="0 0 0 2" BorderBrush="Gray" />
-                        <TextBox x:Name="ConsoleTextBox" Grid.Row="1" Text="{Binding ElementName=_this, Path=ConsoleText, FallbackValue='Some text from somewhere: 0.0 mbps'}" Foreground="WhiteSmoke" Background="#FF474747" FontFamily="M+ 1m" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" Margin="5" TextWrapping="Wrap" FontSize="14"/>
+                        <TextBox x:Name="ConsoleTextBox" Grid.Row="1" Text="{Binding ElementName=_this, Path=ConsoleText, FallbackValue='Network logging will appear here...'}" Foreground="WhiteSmoke" Background="#FF474747" FontFamily="M+ 1m" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" Margin="5" TextWrapping="Wrap" FontSize="14"/>
                     </Grid>
                 </Border>
             </Grid>

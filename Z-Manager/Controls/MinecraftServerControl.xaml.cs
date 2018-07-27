@@ -7,6 +7,18 @@ namespace Z_Manager.Controls
         public MinecraftServerControl()
         {
             InitializeComponent();
+
+            Loaded += MinecraftServerControl_Loaded;
+        }
+
+        private void MinecraftServerControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            
+        }
+
+        private void StartStopServerButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+
         }
     }
 }
