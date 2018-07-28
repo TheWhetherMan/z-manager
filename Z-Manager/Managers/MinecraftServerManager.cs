@@ -28,6 +28,7 @@ namespace Z_Manager.Managers
 
         public static bool AllowLoopServerStatusChecks { get; set; }
         public static readonly string StartBatchFilePath = @"C:\Minecraft\run.bat";
+        public static readonly string BatchFileWorkingDirectory = @"C:\Minecraft\";
 
         private Stopwatch _statusLoopTimer;
         private Stopwatch _processLoopTimer;
@@ -50,6 +51,24 @@ namespace Z_Manager.Managers
         private void OnMinecraftServerStatusMessage(string message)
         {
             LoggingManager.LogMessage(message);
+        }
+
+        /// <summary> Start the Minecraft server via on-disk batch file </summary>
+        public void StartServer()
+        {
+            try
+            {
+                MinecraftServerStatusMessage?.Invoke("Attempting server start via batch file...");
+
+                Process proc = new Process();
+                proc.StartInfo.WorkingDirectory = BatchFileWorkingDirectory;
+                proc.StartInfo.FileName = StartBatchFilePath;
+                proc.Start();
+            }
+            catch (Exception ex)
+            {
+                MinecraftServerStatusMessage?.Invoke("StartServer exception: " + ex.Message);
+            }
         }
 
         public Task LoopStatusChecks()
@@ -142,20 +161,6 @@ namespace Z_Manager.Managers
             finally
             {
                 _checkingProcess = false;
-            }
-        }
-
-        /// <summary> Start the Minecraft server via on-disk batch file </summary>
-        public void StartServer()
-        {
-            try
-            {
-                MinecraftServerStatusMessage?.Invoke("Attempting server start via batch file...");
-                Process.Start(StartBatchFilePath);
-            }
-            catch (Exception ex)
-            {
-                LoggingManager.LogMessage("StartServer exception: " + ex.Message);
             }
         }
 

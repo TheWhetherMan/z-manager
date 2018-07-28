@@ -77,7 +77,7 @@ namespace Z_Manager.Controls
         private void NetworkControl_Loaded(object sender, RoutedEventArgs e)
         {
             NetworkManager.Instance.PingResponseReceived += Network_PingResponseReceived;
-            NetworkManager.Instance.NetworkConsoleMessage += Instance_NetworkConsoleMessage;
+            NetworkManager.Instance.NetworkConsoleMessage += NetworkConsoleMessageUpdate;
             NetworkManager.Instance.ConnectionSpeedTestCompleted += Network_ConnectionSpeedTestCompleted;
         }
 
@@ -86,7 +86,7 @@ namespace Z_Manager.Controls
             Cleanup();
         }
 
-        private void Instance_NetworkConsoleMessage(string obj)
+        private void NetworkConsoleMessageUpdate(string obj)
         {
             ConsoleText += ("NetworkManager message: " + obj + "\n");
         }
@@ -119,7 +119,7 @@ namespace Z_Manager.Controls
         {
             if (NetworkManager.AllowLoopTests)
             {
-                ConsoleText += "Stopping network tests because of user command";
+                ConsoleText += "Stopping network tests because of user command \n";
                 NetworkManager.AllowLoopTests = false;
 
                 StartStopTestsButton.Content = "Start Network Tests";
@@ -137,7 +137,7 @@ namespace Z_Manager.Controls
         private void Cleanup()
         {
             NetworkManager.Instance.PingResponseReceived -= Network_PingResponseReceived;
-            NetworkManager.Instance.NetworkConsoleMessage -= Instance_NetworkConsoleMessage;
+            NetworkManager.Instance.NetworkConsoleMessage -= NetworkConsoleMessageUpdate;
             NetworkManager.Instance.ConnectionSpeedTestCompleted -= Network_ConnectionSpeedTestCompleted;
         }
     }
