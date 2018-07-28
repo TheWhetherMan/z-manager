@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Z_Manager.Objects;
+using System.Threading;
 using System.Net;
 using System;
 
@@ -25,85 +26,54 @@ namespace Z_Manager.Managers
             }
         }
 
+        public static bool AllowPingTests { get; set; }
+        public static bool AllowDownloadTests { get; set; }
         public static readonly string DownloadURL = "http://dl.google.com/chrome/install/154.36/chrome_installer.exe";
         public static readonly string PingAddress = "8.8.8.8";
-        public static bool AllowLoopTests { get; set; }
 
-        private Ping _connectionPing;
-        private Stopwatch _pingTestTimer;
-        private Stopwatch _downloadTestTimer;
-        private static bool _testTaskLoopRunning;
         private static bool _downloading;
-        private static bool _pinging;
+        private static bool _blockPingTest;
+        private Ping _connectionPing;
+        private Timer _pingTestTimer;
+        private Timer _downloadTestTimer;
 
         private NetworkManager()
         {
             _connectionPing = new Ping();
-            _pingTestTimer = new Stopwatch();
-            _downloadTestTimer = new Stopwatch();
+            _pingTestTimer = new Timer(OnFirePingTest, null, (int)TimeSpan.FromSeconds(5).TotalMilliseconds, (int)TimeSpan.FromSeconds(1).TotalMilliseconds);
+            _downloadTestTimer = new Timer(OnFireDownloadTest, null, (int)TimeSpan.FromSeconds(10).TotalMilliseconds, (int)TimeSpan.FromSeconds(10).TotalMilliseconds);
         }
 
-        public Task LoopConnectionTests()
+        private async void OnFirePingTest(object data) 
         {
-            if (_testTaskLoopRunning)
-            {
-                LoggingManager.LogMessage("LoopConnectionTests: Test loop task already running");
-                NetworkConsoleMessage?.Invoke("Test loop task already running");
-                return null;
-            }
-            else
-            {
-                LoggingManager.LogMessage("LoopConnectionTests: Starting tests");
-                NetworkConsoleMessage?.Invoke("Starting tests");
-            }
-
-            try
-            {
-                Task loop = Task.Run(async () => { await NetworkCheckTask(); });
-            }
-            catch (Exception ex)
-            {
-                LoggingManager.LogMessage("LoopConnectionTests exception: " + ex.Message);
-            }
-
-            return null;
+			if (AllowPingTests && !_blockPingTest) 
+			{
+				var ping = await CheckInternetConnectivityViaPing();
+                HandlePingTestCompletion(ping);
+			}
         }
 
-        private async Task NetworkCheckTask()
+        private async void OnFireDownloadTest(object data) 
         {
-            _testTaskLoopRunning = true;
-            _pingTestTimer.Start();
-            _downloadTestTimer.Start();
+			if (AllowDownloadTests) 
+			{
+                _blockPingTest = true;
 
-            while (AllowLoopTests)
-            {
-                if (_downloadTestTimer.ElapsedMilliseconds > 10000 && !_downloading)
+                try 
                 {
-                    _pingTestTimer.Stop();
-                    _downloadTestTimer.Stop();
-
                     NetworkConsoleMessage?.Invoke("About to test download speed...");
                     var speed = await CheckInternetConnectionSpeed();
                     HandleSpeedTestCompletion(speed);
-
-                    continue;
                 }
-
-                if (_pingTestTimer.ElapsedMilliseconds > 1000 && !_pinging)
+                finally
                 {
-                    _pingTestTimer.Stop();
-                    _downloadTestTimer.Stop();
-
-                    var ping = await CheckInternetConnectivityViaPing();
-                    HandlePingTestCompletion(ping);
-
-                    continue;
+                    _blockPingTest = false;
                 }
-
-                await Task.Delay(250);
-            }
-
-            _testTaskLoopRunning = false;
+			}
+			else 
+			{
+				NetworkConsoleMessage?.Invoke("Download tests not allowed, skipping");
+			}
         }
 
         private void HandlePingTestCompletion(PingReply ping)
@@ -115,11 +85,8 @@ namespace Z_Manager.Managers
             }
             else
             {
-                LoggingManager.LogMessage("Ping test result: Failed to get a response");
+                LoggingManager.LogMessage("Ping test result: Failed to get a response from " + PingAddress);
             }
-
-            _downloadTestTimer.Start();
-            _pingTestTimer.Restart();
         }
 
         private void HandleSpeedTestCompletion(ConnectionSpeedTestResult speed)
@@ -133,9 +100,6 @@ namespace Z_Manager.Managers
             {
                 LoggingManager.LogMessage("Speed test result: Failed to complete download task");
             }
-
-            _downloadTestTimer.Restart();
-            _pingTestTimer.Restart();
         }
 
         /// <summary> Check connectivity to stable endpoint like Google </summary>
@@ -149,17 +113,12 @@ namespace Z_Manager.Managers
                 
                 return await Task.Run(async () =>
                 {
-                    _pinging = true;
                     return await _connectionPing.SendPingAsync(PingAddress, timeout, buffer, pingOptions);
                 });
             }
             catch (Exception ex)
             {
                 LoggingManager.LogMessage("CheckInternetConnectivityViaPing exception: " + ex.Message);
-            }
-            finally
-            {
-                _pinging = false;
             }
 
             LoggingManager.LogMessage("CheckInternetConnectivityViaPing must have failed");

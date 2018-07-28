@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Sockets;
 using Z_Manager.Objects;
+using System.Threading;
 using System.Linq;
 using System.Text;
 using System;
@@ -11,6 +12,7 @@ namespace Z_Manager.Managers
 {
     public class MinecraftServerManager
     {
+        public event Action<bool> MinecraftServerProcessUpdate;
         public event Action<bool> MinecraftServerStatusUpdate;
         public event Action<string> MinecraftServerStatusMessage;
 
@@ -26,13 +28,13 @@ namespace Z_Manager.Managers
             }
         }
 
-        public static bool AllowLoopServerStatusChecks { get; set; }
+        public static bool AllowServerProcessChecks { get; set; }
+        public static bool AllowServerStatusChecks { get; set; }
         public static readonly string StartBatchFilePath = @"C:\Minecraft\run.bat";
         public static readonly string BatchFileWorkingDirectory = @"C:\Minecraft\";
 
-        private Stopwatch _statusLoopTimer;
-        private Stopwatch _processLoopTimer;
-        private static bool _serverCheckLoopRunning;
+        private Timer _serverProcessTimer;
+        private Timer _serverStatusTimer;
         private const ushort _dataSize = 512;
         private const ushort _numFields = 6;
         private string _serverAddress = "";
@@ -42,8 +44,8 @@ namespace Z_Manager.Managers
 
         private MinecraftServerManager()
         {
-            _statusLoopTimer = new Stopwatch();
-            _processLoopTimer = new Stopwatch();
+            _serverProcessTimer = new Timer(OnServerProcessCheck, null, (int)TimeSpan.FromSeconds(5).TotalMilliseconds, (int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            _serverStatusTimer = new Timer(OnServerStatusCheck, null, (int)TimeSpan.FromSeconds(30).TotalMilliseconds, (int)TimeSpan.FromSeconds(60).TotalMilliseconds);
 
             MinecraftServerStatusMessage += OnMinecraftServerStatusMessage;
         }
@@ -51,6 +53,36 @@ namespace Z_Manager.Managers
         private void OnMinecraftServerStatusMessage(string message)
         {
             LoggingManager.LogMessage(message);
+        }
+
+        private void OnServerProcessCheck(object data) 
+        {
+			if (AllowServerProcessChecks) 
+			{
+				MinecraftServerStatusMessage?.Invoke("About to check server process...");
+				bool processRunning = CheckServerProcess();
+
+				MinecraftServerProcessUpdate?.Invoke(processRunning);
+			}
+			else 
+			{
+				MinecraftServerStatusMessage?.Invoke("Server process checks are not allowed, skipping");
+			}
+        }
+
+        private void OnServerStatusCheck(object data) 
+        {
+			if (AllowServerStatusChecks) 
+			{
+				MinecraftServerStatusMessage?.Invoke("About to check server process...");
+				MinecraftStatusDTO statusResult = GetServerStatus();
+
+				MinecraftServerStatusUpdate?.Invoke(statusResult.ServerUp);
+			}
+			else 
+			{
+				MinecraftServerStatusMessage?.Invoke("Server status checks are not allowed, skipping");
+			}
         }
 
         /// <summary> Start the Minecraft server via on-disk batch file </summary>
@@ -69,68 +101,6 @@ namespace Z_Manager.Managers
             {
                 MinecraftServerStatusMessage?.Invoke("StartServer exception: " + ex.Message);
             }
-        }
-
-        public Task LoopStatusChecks()
-        {
-            if (_serverCheckLoopRunning)
-            {
-                MinecraftServerStatusMessage?.Invoke("Server check task already running");
-                return null;
-            }
-            else
-            {
-                MinecraftServerStatusMessage?.Invoke("Starting server check task");
-            }
-
-            try
-            {
-                Task loop = Task.Run(async () => { await CheckServerTask(); });
-            }
-            catch (Exception ex)
-            {
-                MinecraftServerStatusMessage?.Invoke("LoopStatusChecks exception: " + ex.Message);
-            }
-
-            return null;
-        }
-
-        private async Task CheckServerTask()
-        {
-            _serverCheckLoopRunning = true;
-            _statusLoopTimer.Start();
-            _processLoopTimer.Start();
-
-            while (AllowLoopServerStatusChecks)
-            {
-                if (_processLoopTimer.ElapsedMilliseconds > 30000 && !_checkingProcess)
-                {
-                    _statusLoopTimer.Stop();
-                    _processLoopTimer.Stop();
-
-                    MinecraftServerStatusMessage?.Invoke("About to check server process...");
-                    bool processRunning = CheckServerProcess();
-
-                    _statusLoopTimer.Start();
-                    _processLoopTimer.Restart();
-                }
-
-                if (_statusLoopTimer.ElapsedMilliseconds > 60000 && !_checkingStatus)
-                {
-                    _statusLoopTimer.Stop();
-                    _processLoopTimer.Stop();
-
-                    MinecraftServerStatusMessage?.Invoke("About to check server process...");
-                    MinecraftStatusDTO processRunning = GetServerStatus();
-
-                    _processLoopTimer.Start();
-                    _statusLoopTimer.Restart();
-                }
-
-                await Task.Delay(1000);
-            }
-
-            _serverCheckLoopRunning = false;
         }
 
         /// <summary> Check if there are running instance(s) of a Minecraft server </summary>

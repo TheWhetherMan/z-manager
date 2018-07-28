@@ -111,31 +111,6 @@ namespace Z_Manager.Controls
             ConsoleText += (DateTime.Now.ToString("MM.dd HH:mm:ss") + " :: " + "Download test completed" + "\n");
         }
 
-        private async void StartTestsButton_Click(object sender, RoutedEventArgs e)
-        {
-            NetworkManager.AllowLoopTests = true;
-            await NetworkManager.Instance.LoopConnectionTests();
-        }
-
-        private void StartStopTestLoopButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (NetworkManager.AllowLoopTests)
-            {
-                ConsoleText += "Stopping network tests because of user command \n";
-                NetworkManager.AllowLoopTests = false;
-
-                StartStopTestsButton.Content = "Start Network Tests";
-            }
-            else
-            {
-                ConsoleText += "Starting network tests because of user command \n";
-                NetworkManager.AllowLoopTests = true;
-                Task loopTask = Task.Run(async () => { await NetworkManager.Instance.LoopConnectionTests(); });
-
-                StartStopTestsButton.Content = "Stop Network Tests";
-            }
-        }
-
         private void Cleanup()
         {
             UnhookSubscriptions();
@@ -146,6 +121,42 @@ namespace Z_Manager.Controls
             NetworkManager.Instance.PingResponseReceived -= Network_PingResponseReceived;
             NetworkManager.Instance.NetworkConsoleMessage -= NetworkConsoleMessageUpdate;
             NetworkManager.Instance.ConnectionSpeedTestCompleted -= Network_ConnectionSpeedTestCompleted;
+        }
+
+        private void TogglePingTestsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NetworkManager.AllowPingTests)
+            {
+                ConsoleText += "Stopping ping tests because of user command \n";
+                NetworkManager.AllowPingTests = false;
+
+                TogglePingTestsButton.Content = "Allow Ping Tests";
+            }
+            else
+            {
+                ConsoleText += "Starting ping tests because of user command \n";
+                NetworkManager.AllowPingTests = true;
+
+                TogglePingTestsButton.Content = "Disallow Ping Tests";
+            }
+        }
+
+        private void ToggleDownloadTestsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NetworkManager.AllowDownloadTests)
+            {
+                ConsoleText += "Stopping download tests because of user command \n";
+                NetworkManager.AllowDownloadTests = false;
+
+                TogglePingTestsButton.Content = "Allow Download Tests";
+            }
+            else
+            {
+                ConsoleText += "Starting download tests because of user command \n";
+                NetworkManager.AllowDownloadTests = true;
+
+                TogglePingTestsButton.Content = "Disallow Download Tests";
+            }
         }
     }
 }
