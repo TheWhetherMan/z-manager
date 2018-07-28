@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Z_Manager.Managers;
 using System.Windows;
+using System;
 
 namespace Z_Manager.Controls
 {
@@ -37,17 +38,23 @@ namespace Z_Manager.Controls
 
         private void MinecraftServerControl_Loaded(object sender, RoutedEventArgs e)
         {
+            UnhookSubscriptions();
             MinecraftServerManager.Instance.MinecraftServerStatusMessage += OnMinecraftServerStatusMessage;
         }
 
         private void OnMinecraftServerStatusMessage(string obj)
         {
-            ConsoleText += ("MinecraftServerManager message: " + obj + "\n");
+            ConsoleText += (DateTime.Now.ToString("MM.dd HH:mm:ss") + " :: " + obj + "\n");
         }
 
         private void StartStopServerButton_Click(object sender, RoutedEventArgs e)
         {
             MinecraftServerManager.Instance.StartServer();
+        }
+
+        private void UnhookSubscriptions()
+        {
+            MinecraftServerManager.Instance.MinecraftServerStatusMessage -= OnMinecraftServerStatusMessage;
         }
     }
 }

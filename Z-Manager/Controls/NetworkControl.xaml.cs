@@ -5,6 +5,7 @@ using System.Windows.Data;
 using Z_Manager.Managers;
 using Z_Manager.Objects;
 using System.Windows;
+using System;
 
 namespace Z_Manager.Controls
 {
@@ -76,6 +77,7 @@ namespace Z_Manager.Controls
 
         private void NetworkControl_Loaded(object sender, RoutedEventArgs e)
         {
+            UnhookSubscriptions();
             NetworkManager.Instance.PingResponseReceived += Network_PingResponseReceived;
             NetworkManager.Instance.NetworkConsoleMessage += NetworkConsoleMessageUpdate;
             NetworkManager.Instance.ConnectionSpeedTestCompleted += Network_ConnectionSpeedTestCompleted;
@@ -88,7 +90,7 @@ namespace Z_Manager.Controls
 
         private void NetworkConsoleMessageUpdate(string obj)
         {
-            ConsoleText += ("NetworkManager message: " + obj + "\n");
+            ConsoleText += (DateTime.Now.ToString("MM.dd HH:mm:ss") + " :: " + obj + "\n");
         }
 
         private void Network_PingResponseReceived(double obj)
@@ -96,7 +98,7 @@ namespace Z_Manager.Controls
             PingAddress = NetworkManager.PingAddress;
             LastPingTime = obj.ToString();
 
-            ConsoleText += ("Ping test result: " + obj + "ms" + "\n");
+            ConsoleText += (DateTime.Now.ToString("MM.dd HH:mm:ss") + " :: " + "Ping result: " + obj + "ms" + "\n");
         }
 
         private void Network_ConnectionSpeedTestCompleted(ConnectionSpeedTestResult obj)
@@ -106,7 +108,7 @@ namespace Z_Manager.Controls
             LastDownloadTime = obj.DownloadTimeSeconds.TotalSeconds.ToString();
             LastDownloadFileSize = obj.FileSize;
 
-            ConsoleText += ("Speed test result: " + obj.DownloadSpeedBitsPerSecond + "bps" + "\n");
+            ConsoleText += (DateTime.Now.ToString("MM.dd HH:mm:ss") + " :: " + "Download test completed" + "\n");
         }
 
         private async void StartTestsButton_Click(object sender, RoutedEventArgs e)
@@ -135,6 +137,11 @@ namespace Z_Manager.Controls
         }
 
         private void Cleanup()
+        {
+            UnhookSubscriptions();
+        }
+
+        private void UnhookSubscriptions()
         {
             NetworkManager.Instance.PingResponseReceived -= Network_PingResponseReceived;
             NetworkManager.Instance.NetworkConsoleMessage -= NetworkConsoleMessageUpdate;
