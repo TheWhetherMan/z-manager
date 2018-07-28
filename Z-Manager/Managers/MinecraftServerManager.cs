@@ -13,8 +13,8 @@ namespace Z_Manager.Managers
     public class MinecraftServerManager
     {
         public event Action<bool> MinecraftServerProcessUpdate;
-        public event Action<bool> MinecraftServerStatusUpdate;
-        public event Action<string> MinecraftServerStatusMessage;
+        public event Action<MinecraftStatusDTO> MinecraftServerStatusUpdate;
+        public event Action<string> MinecraftServerManagerMessage;
 
         public static MinecraftServerManager _instance;
         public static MinecraftServerManager Instance
@@ -37,17 +37,17 @@ namespace Z_Manager.Managers
         private Timer _serverStatusTimer;
         private const ushort _dataSize = 512;
         private const ushort _numFields = 6;
-        private string _serverAddress = "";
-        private ushort _serverPort = 0;
+        private string _serverAddress = "192.168.1.114";
+        private ushort _serverPort = 25565;
         private bool _checkingProcess;
         private bool _checkingStatus;
 
         private MinecraftServerManager()
         {
-            _serverProcessTimer = new Timer(OnServerProcessCheck, null, (int)TimeSpan.FromSeconds(5).TotalMilliseconds, (int)TimeSpan.FromSeconds(30).TotalMilliseconds);
-            _serverStatusTimer = new Timer(OnServerStatusCheck, null, (int)TimeSpan.FromSeconds(30).TotalMilliseconds, (int)TimeSpan.FromSeconds(60).TotalMilliseconds);
+            _serverProcessTimer = new Timer(OnServerProcessCheck, null, (int)TimeSpan.FromSeconds(1).TotalMilliseconds, (int)TimeSpan.FromSeconds(60).TotalMilliseconds);
+            _serverStatusTimer = new Timer(OnServerStatusCheck, null, (int)TimeSpan.FromSeconds(10).TotalMilliseconds, (int)TimeSpan.FromSeconds(60).TotalMilliseconds);
 
-            MinecraftServerStatusMessage += OnMinecraftServerStatusMessage;
+            MinecraftServerManagerMessage += OnMinecraftServerStatusMessage;
         }
 
         private void OnMinecraftServerStatusMessage(string message)
@@ -59,14 +59,14 @@ namespace Z_Manager.Managers
         {
 			if (AllowServerProcessChecks) 
 			{
-				MinecraftServerStatusMessage?.Invoke("About to check server process...");
+				MinecraftServerManagerMessage?.Invoke("About to check server process...");
 				bool processRunning = CheckServerProcess();
 
 				MinecraftServerProcessUpdate?.Invoke(processRunning);
 			}
 			else 
 			{
-				MinecraftServerStatusMessage?.Invoke("Server process checks are not allowed, skipping");
+				MinecraftServerManagerMessage?.Invoke("Server process checks are not allowed, skipping");
 			}
         }
 
@@ -74,14 +74,14 @@ namespace Z_Manager.Managers
         {
 			if (AllowServerStatusChecks) 
 			{
-				MinecraftServerStatusMessage?.Invoke("About to check server process...");
+				MinecraftServerManagerMessage?.Invoke("About to check server process...");
 				MinecraftStatusDTO statusResult = GetServerStatus();
 
-				MinecraftServerStatusUpdate?.Invoke(statusResult.ServerUp);
+				MinecraftServerStatusUpdate?.Invoke(statusResult);
 			}
 			else 
 			{
-				MinecraftServerStatusMessage?.Invoke("Server status checks are not allowed, skipping");
+				MinecraftServerManagerMessage?.Invoke("Server status checks are not allowed, skipping");
 			}
         }
 
@@ -90,7 +90,7 @@ namespace Z_Manager.Managers
         {
             try
             {
-                MinecraftServerStatusMessage?.Invoke("Attempting server start via batch file...");
+                MinecraftServerManagerMessage?.Invoke("Attempting server start via batch file...");
 
                 Process proc = new Process();
                 proc.StartInfo.WorkingDirectory = BatchFileWorkingDirectory;
@@ -99,7 +99,7 @@ namespace Z_Manager.Managers
             }
             catch (Exception ex)
             {
-                MinecraftServerStatusMessage?.Invoke("StartServer exception: " + ex.Message);
+                MinecraftServerManagerMessage?.Invoke("StartServer exception: " + ex.Message);
             }
         }
 
@@ -108,18 +108,24 @@ namespace Z_Manager.Managers
         {
             try
             {
+                if (_checkingProcess)
+                {
+                    MinecraftServerManagerMessage?.Invoke("Already checking server process");
+                    return false;
+                }
+
                 _checkingProcess = true;
 
-                if (Process.GetProcessesByName("javaw").Count() > 0)
+                if (Process.GetProcessesByName("java").Count() > 0)
                 {
-                    MinecraftServerStatusMessage?.Invoke("Minecraft server appears to be running");
-                    MinecraftServerStatusUpdate?.Invoke(true);
+                    MinecraftServerManagerMessage?.Invoke("Minecraft server appears to be running");
+                    MinecraftServerProcessUpdate?.Invoke(true);
                     return true;
                 }
                 else
                 {
-                    MinecraftServerStatusMessage?.Invoke("Minecraft server process not found");
-                    MinecraftServerStatusUpdate?.Invoke(false);
+                    MinecraftServerManagerMessage?.Invoke("Minecraft server process not found");
+                    MinecraftServerProcessUpdate?.Invoke(false);
                     return false;
                 }
             }
@@ -140,7 +146,13 @@ namespace Z_Manager.Managers
         {
             if (string.IsNullOrEmpty(_serverAddress) || _serverPort == 0)
             {
-                MinecraftServerStatusMessage?.Invoke("Can't get server status because address/port do not appear to be set");
+                MinecraftServerManagerMessage?.Invoke("Can't get server status because address/port do not appear to be set");
+                return null;
+            }
+
+            if (_checkingStatus)
+            {
+                MinecraftServerManagerMessage?.Invoke("Already checking server status");
                 return null;
             }
 
@@ -164,7 +176,7 @@ namespace Z_Manager.Managers
                         stopWatch.Start();
                         client.Connect(_serverAddress, _serverPort);
                         stopWatch.Stop();
-                        dto.CheckTime = stopWatch.ElapsedMilliseconds;
+                        dto.CheckTime = DateTime.Now;
 
                         NetworkStream stream = client.GetStream();
                         stream.Write(payload, 0, payload.Length);
@@ -174,14 +186,14 @@ namespace Z_Manager.Managers
                 }
                 catch (Exception ex)
                 {
-                    MinecraftServerStatusMessage?.Invoke("GetServerStatus exception: " + ex.Message);
+                    MinecraftServerManagerMessage?.Invoke("GetServerStatus exception: " + ex.Message);
                     dto.ServerUp = false;
                     return dto;
                 }
 
                 if (rawServerData == null || rawServerData.Length == 0)
                 {
-                    MinecraftServerStatusMessage?.Invoke("Server status data was not populated");
+                    MinecraftServerManagerMessage?.Invoke("Server status data was not populated");
                     dto.ServerUp = false;
                 }
                 else
@@ -195,11 +207,11 @@ namespace Z_Manager.Managers
                         dto.CurrentPlayers = serverData[4];
                         dto.MaximumPlayers = serverData[5];
 
-                        MinecraftServerStatusMessage?.Invoke("Got valid server status data");
+                        MinecraftServerManagerMessage?.Invoke("Got valid server status data");
                     }
                     else
                     {
-                        MinecraftServerStatusMessage?.Invoke("Server status data was not populated as expected");
+                        MinecraftServerManagerMessage?.Invoke("Server status data was not populated as expected");
                         dto.ServerUp = false;
                     }
                 }

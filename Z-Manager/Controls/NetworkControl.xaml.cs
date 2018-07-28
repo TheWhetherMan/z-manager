@@ -127,14 +127,14 @@ namespace Z_Manager.Controls
         {
             if (NetworkManager.AllowPingTests)
             {
-                ConsoleText += "Stopping ping tests because of user command \n";
+                NetworkConsoleMessageUpdate("Disallowing ping tests because of user command");
                 NetworkManager.AllowPingTests = false;
 
                 TogglePingTestsButton.Content = "Allow Ping Tests";
             }
             else
             {
-                ConsoleText += "Starting ping tests because of user command \n";
+                NetworkConsoleMessageUpdate("Allowing ping tests because of user command");
                 NetworkManager.AllowPingTests = true;
 
                 TogglePingTestsButton.Content = "Disallow Ping Tests";
@@ -145,17 +145,17 @@ namespace Z_Manager.Controls
         {
             if (NetworkManager.AllowDownloadTests)
             {
-                ConsoleText += "Stopping download tests because of user command \n";
+                NetworkConsoleMessageUpdate("Disallowing download tests because of user command");
                 NetworkManager.AllowDownloadTests = false;
 
-                TogglePingTestsButton.Content = "Allow Download Tests";
+                ToggleDownloadTestsButton.Content = "Allow Download Tests";
             }
             else
             {
-                ConsoleText += "Starting download tests because of user command \n";
+                NetworkConsoleMessageUpdate("Allowing download tests because of user command");
                 NetworkManager.AllowDownloadTests = true;
 
-                TogglePingTestsButton.Content = "Disallow Download Tests";
+                ToggleDownloadTestsButton.Content = "Disallow Download Tests";
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Z_Manager.Objects
+﻿using System;
+
+namespace Z_Manager.Objects
 {
     public class MinecraftStatusDTO
     {
@@ -9,6 +11,6 @@
         public string CurrentPlayers { get; set; }
         public string MaximumPlayers { get; set; }
         public bool ServerUp { get; set; }
-        public long CheckTime { get; set; }
+        public DateTime CheckTime { get; set; }
     }
 }
