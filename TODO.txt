@@ -1,0 +1,9 @@
+TODO List:
+
+Implement Minecraft server start and stop functions.
+
+Implement Minecraft server status check functions.
+
+Update logging manager to save to files based on day to split them up.
+
+Implement configuration manager and JSON serialization.
