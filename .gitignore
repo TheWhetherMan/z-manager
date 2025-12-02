@@ -327,3 +327,5 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+Z-Manager/Properties/Resources.Designer.cs
+Z-Manager/Properties/Settings.Designer.cs
